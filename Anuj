@@ -1,0 +1,148 @@
+package com.resiltrex;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@SpringBootApplication
+@RestController
+public class ResiltrexApp {
+
+    private final List<Idea> ideas = new ArrayList<>();
+
+    public static void main(String[] args) {
+        SpringApplication.run(ResiltrexApp.class, args);
+    }
+
+    // ================= WEBSITE =================
+    @GetMapping("/")
+    public String home() {
+        return """
+<!DOCTYPE html>
+<html>
+<head>
+<title>Resiltrex – From Idea to Investor</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<style>
+body{font-family:Inter,Arial;margin:0;color:#111}
+nav{padding:20px 60px;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
+.hero{text-align:center;padding:100px 20px}
+.hero h1{font-size:56px}
+.hero p{font-size:20px;color:#555;max-width:700px;margin:auto}
+button{padding:14px 28px;background:#000;color:#fff;border:none;border-radius:8px}
+.section{padding:80px 60px;max-width:1100px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:30px}
+.card{border:1px solid #eee;border-radius:14px;padding:30px}
+input,textarea,select{width:100%;padding:14px;margin-bottom:16px;border-radius:8px;border:1px solid #ccc}
+footer{text-align:center;padding:40px;border-top:1px solid #eee;color:#666}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <strong>Resiltrex</strong>
+  <span>YC-style idea → investor platform</span>
+</nav>
+
+<div class="hero">
+  <h1>From Idea to Investor</h1>
+  <p>We help resilient entrepreneurs without access turn ideas into investor-ready opportunities.</p>
+  <button onclick="document.getElementById('apply').scrollIntoView()">Apply with Your Idea</button>
+</div>
+
+<div class="section">
+  <h2>The Problem</h2>
+  <div class="grid">
+    <div class="card">No ecosystem</div>
+    <div class="card">No pitching clarity</div>
+    <div class="card">No investor access</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>How Resiltrex Works</h2>
+  <div class="grid">
+    <div class="card">Submit your idea</div>
+    <div class="card">Get clarity & pitch guidance</div>
+    <div class="card">Reach investors & partners</div>
+  </div>
+</div>
+
+<div id="apply" class="section">
+  <h2>Apply with Your Idea</h2>
+  <form onsubmit="submitIdea(event)">
+    <input id="name" placeholder="Your Name" required>
+    <input id="email" placeholder="Email" required>
+    <textarea id="problem" placeholder="Problem you are solving" required></textarea>
+    <textarea id="solution" placeholder="Your idea / solution" required></textarea>
+    <select id="stage">
+      <option>Idea</option>
+      <option>Prototype</option>
+      <option>MVP</option>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
+<div class="section">
+  <h2>Featured Startup (Demo)</h2>
+  <div class="card">
+    <h3>Foodo City</h3>
+    <p><strong>Problem:</strong> Small food brands lack visibility & scale.</p>
+    <p><strong>Solution:</strong> Hyperlocal food discovery + franchise ecosystem.</p>
+    <p><strong>Stage:</strong> Prototype</p>
+    <p><strong>Seeking:</strong> Seed Funding</p>
+  </div>
+</div>
+
+<footer>
+© 2026 Resiltrex · Built for resilient entrepreneurs
+</footer>
+
+<script>
+function submitIdea(e){
+  e.preventDefault();
+  fetch('/submit', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name: name.value,
+      email: email.value,
+      problem: problem.value,
+      solution: solution.value,
+      stage: stage.value
+    })
+  }).then(()=>alert('Idea submitted successfully'));
+}
+</script>
+
+</body>
+</html>
+""";
+    }
+
+    // ================= API =================
+    @PostMapping("/submit")
+    public void submitIdea(@RequestBody Idea idea) {
+        ideas.add(idea);
+        System.out.println("New Idea: " + idea.problem);
+    }
+
+    @GetMapping("/ideas")
+    public List<Idea> getIdeas() {
+        return ideas;
+    }
+
+    // ================= MODEL =================
+    static class Idea {
+        public String name;
+        public String email;
+        public String problem;
+        public String solution;
+        public String stage;
+    }
+}
